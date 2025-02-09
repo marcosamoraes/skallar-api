@@ -18,7 +18,7 @@ class ProductResource extends JsonResource
             'name' => $this->name,
             'description' => $this->description,
             'price' => number_format($this->price, 2),
-            'stock_quantity' => $this->stock_quantity,
+            'stock' => $this->stock,
             'created_at' => $this->created_at->toDateTimeString(),
             'updated_at' => $this->updated_at->toDateTimeString(),
         ];

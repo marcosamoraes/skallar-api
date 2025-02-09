@@ -19,7 +19,7 @@ class ProductController extends Controller
     private const CACHE_KEY_COLLECTION = 'products';
     private const CACHE_KEY_SINGLE = 'product';
     private const CACHE_TTL = 3600; // 1 hour
-    private const PER_PAGE = 10;
+    private const PER_PAGE = 2;
 
     /**
      * Display a listing of the resource.
@@ -27,13 +27,20 @@ class ProductController extends Controller
     public function index(Request $request): JsonResponse
     {
         try {
+            $page = $request->input('page', 1);
             $perPage = $request->input('per_page', self::PER_PAGE);
+            $search = $request->input('search');
+
+            $cacheKey = self::CACHE_KEY_COLLECTION . ":{$page}:{$perPage}:{$search}";
 
             $products = Cache::remember(
-                self::CACHE_KEY_COLLECTION . ":{$perPage}",
+                $cacheKey,
                 self::CACHE_TTL,
-                function () use ($perPage) {
-                    return Product::orderBy('created_at', 'desc')
+                function () use ($perPage, $search) {
+                    return Product::when($search, function ($query, $search) {
+                            return $query->where('name', 'like', "%{$search}%");
+                        })
+                        ->orderBy('created_at', 'desc')
                         ->paginate($perPage);
                 }
             );
