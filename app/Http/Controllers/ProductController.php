@@ -19,7 +19,7 @@ class ProductController extends Controller
     private const CACHE_KEY_COLLECTION = 'products';
     private const CACHE_KEY_SINGLE = 'product';
     private const CACHE_TTL = 3600; // 1 hour
-    private const PER_PAGE = 2;
+    private const PER_PAGE = 10;
 
     /**
      * Display a listing of the resource.
@@ -93,7 +93,7 @@ class ProductController extends Controller
         try {
             $product = Product::findOrFail($id);
             $product->update($request->validated());
-            $this->clearProductCache($id);
+            $this->clearProductCache();
 
             return $this->successResponse(new ProductResource($product));
         } catch (\Exception $e) {
@@ -110,7 +110,7 @@ class ProductController extends Controller
         try {
             $product = Product::findOrFail($id);
             $product->delete();
-            $this->clearProductCache($id);
+            $this->clearProductCache();
 
             return $this->noContentResponse();
         } catch (\Exception $e) {
@@ -134,11 +134,8 @@ class ProductController extends Controller
     /**
      * Clear product related cache
      */
-    private function clearProductCache(?string $id = null): void
+    private function clearProductCache(): void
     {
-        Cache::forget(self::CACHE_KEY_COLLECTION);
-        if ($id) {
-            Cache::forget(self::CACHE_KEY_SINGLE . ":{$id}");
-        }
+        Cache::flush();
     }
 }
